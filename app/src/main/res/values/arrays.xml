@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="menus">
+        <item>経営資源とドメイン</item>
+        <item>ESG</item>
+        <item>成長戦略</item>
+        <item>競争戦略</item>
+        <item>外部連携</item>
+        <item>組織設計</item>
+        <item>組織文化･学習･変革</item>
+        <item>組織行動</item>
+        <item>採用･配置</item>
+        <item>報酬・育成・評価</item>
+    </string-array>
+</resources>
