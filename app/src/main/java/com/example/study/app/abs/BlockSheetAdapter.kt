@@ -1,4 +1,4 @@
-package com.example.study
+package com.example.study.app.abs
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
@@ -6,11 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.example.study.R
+import com.example.study.model.abs.BlockItem
 
-class BlockItemListAdapter(private val context: Context,
-                           private val blockItemList: List<BlockItem>,
-                           private val onBlockItemClicked: (BlockItem) -> Unit)
-    : RecyclerView.Adapter<BlockItemListAdapter.BlockItemViewHolder>() {
+class BlockSheetAdapter(private val context: Context,
+                        private val blockItemList: List<BlockItem>,
+                        private val onBlockItemClicked: (Int, BlockItem) -> Unit)
+    : RecyclerView.Adapter<BlockSheetAdapter.BlockItemViewHolder>() {
 
     private val inflater = LayoutInflater.from(context)
 
@@ -20,7 +22,7 @@ class BlockItemListAdapter(private val context: Context,
 
         view.setOnClickListener {
             val blockItem = blockItemList[viewHolder.adapterPosition]
-            onBlockItemClicked(blockItem)
+            onBlockItemClicked(viewHolder.adapterPosition, blockItem)
         }
         return viewHolder
     }
