@@ -16,34 +16,29 @@ import android.view.MenuItem
 import android.widget.Toast
 import com.example.study.*
 import com.example.study.app.abs.*
-import com.example.study.app.eba.EbaFragment
-import com.example.study.app.eba.EbaMemoTitlesFragment
-import com.example.study.app.eba.EbaWebFragment
-import com.example.study.app.eba.EbaWritingDrillListFragment
+import com.example.study.app.eba.*
 import com.example.study.model.Quotation
 import com.example.study.model.abs.AbstractionBlock
 import com.example.study.model.abs.BlockItem
 import com.example.study.model.abs.BlockSheet
 import com.example.study.model.abs.BlockSheetManager
+import com.example.study.model.eba.EbaWebLecture
 import com.example.study.persistence.BlockStudyDatabase
-import com.example.study.persistence.QuotationsDao
-import com.example.study.persistence.abs.*
-import com.example.study.persistence.eba.EbaDailyWebLogsDao
-import com.example.study.persistence.eba.EbaTotalWebLogsDao
-import com.example.study.persistence.eba.EbaWebLogsDao
-import com.example.study.persistence.eba.EbaWebMemoDao
+import com.example.study.persistence.abs.AbsRecentResultsDao
 import com.google.firebase.FirebaseApp
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 
 
-class MainActivity : AppCompatActivity(),
-    AbsGridFragment.OnAbstractionBlockSelectListener,
-    AbsIndexFragment.OnBlockSheetSelectListener,
+class MainActivity : AppCompatActivity(), BlockSheetListener,
     OnBlockItemSelectListener, OnLoadFragmentListener,
     NavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var blockSheetManager: BlockSheetManager
+
+    override fun getBlockSheetManager(): BlockSheetManager {
+        return blockSheetManager
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +50,7 @@ class MainActivity : AppCompatActivity(),
             FirebaseApp.initializeApp(this)
 
             blockSheetManager = BlockSheetManager()
-            blockSheetManager.setup(this)
+            blockSheetManager.setup()
 
             if (savedInstanceState == null) {
                 supportFragmentManager
@@ -93,64 +88,63 @@ class MainActivity : AppCompatActivity(),
         return super.onCreateOptionsMenu(menu)
     }
 
+    override fun loadMenuFragment() {
+        blockSheetManager.init()
+
+        replaceAbsScreen(AbsMenuFragment(), "normalMenuList")
+    }
+
     override fun loadAbstractionBlockMenu() {
         blockSheetManager.changeStatus(ABSTRACTION_MENU_STATUS)
 
-        replaceAbsScreen(AbsGridFragment.newInstance(blockSheetManager), "normalMenuList")
+        replaceAbsScreen(AbsGridFragment(), "normalMenuList")
     }
 
     override fun loadForgettingFragment() {
         blockSheetManager.changeStatus(FORGETTING_LIST_STATUS)
 
-        replaceAbsScreen(AbsForgettingsFragment.newInstance(blockSheetManager), "forgettings")
+        replaceAbsScreen(AbsForgettingsFragment(), "forgettings")
     }
 
     override fun loadWastingFragment() {
         blockSheetManager.changeStatus(WASTING_LIST_STATUS)
 
-        replaceAbsScreen(AbsWastingsFragment.newInstance(blockSheetManager), "wastings")
+        replaceAbsScreen(AbsWastingsFragment(), "wastings")
+    }
+
+    /* 抽象化ブロックから */
+    override fun loadAbsIndexFragment(abstractionBlock: AbstractionBlock) {
+        blockSheetManager.changeStatus(ABSTRACTION_BLOCK_STATUS)
+        blockSheetManager.selectedAbstractionBlock = abstractionBlock
+
+        replaceAbsScreen(AbsIndexFragment.newInstance(abstractionBlock), "selectedAbstractionBlock")
+    }
+
+    override fun loadBlockSheetFragment(blockSheet: BlockSheet) {
+        blockSheetManager.changeStatus(BLOCK_SHEET_STATUS)
+        blockSheetManager.selectedBlockSheet = blockSheet
+
+        replaceAbsScreen(BlockSheetFragment(), "selectedBlockSheet")
     }
 
     override fun loadBlockItemListFragment() {
         when (blockSheetManager.previouStatus) {
-            BLOCK_SHEET_STATUS -> onBlockSheetSelected(blockSheetManager.selectedBlockSheet!!)
+            BLOCK_SHEET_STATUS -> loadBlockSheetFragment(blockSheetManager.selectedBlockSheet!!)
             FORGETTING_LIST_STATUS -> loadForgettingFragment()
             WASTING_LIST_STATUS -> loadWastingFragment()
         }
     }
 
-    override fun onAbstractionBlockSelected(abstractionBlock: AbstractionBlock) {
-        blockSheetManager.changeStatus(ABSTRACTION_BLOCK_STATUS)
-        blockSheetManager.selectedAbstractionBlock = abstractionBlock
-        val abstractionBlockFragment = AbsIndexFragment.newInstance(abstractionBlock)
-
-        replaceAbsScreen(abstractionBlockFragment, "selectedAbstractionBlock")
-    }
-
-    override fun onBlockSheetSelected(blockSheet: BlockSheet) {
-        blockSheetManager.changeStatus(BLOCK_SHEET_STATUS)
-        blockSheetManager.selectedBlockSheet = blockSheet
-        val blockSheetFragment = BlockSheetFragment.newInstance(blockSheetManager)
-
-        replaceAbsScreen(blockSheetFragment, "selectedBlockSheet")
-    }
-
     override fun onBlockItemSelected(index: Int, blockItem: BlockItem) {
         blockSheetManager.changeStatus(BLOCK_ITEM_STATUS)
         blockSheetManager.selectedBlockItemListIndex = index
-        val blockItemFragment = BlockSheetItemFragment.newInstance(blockSheetManager)
+        blockSheetManager.selectedBlockSheet = blockItem.blockSheet
 
-        replaceAbsScreen(blockItemFragment, "selectedBlockItem")
+        replaceAbsScreen(BlockSheetItemFragment(), "selectedBlockItem")
     }
 
-    override fun loadMenuFragment() {
-        blockSheetManager.init()
-
-        replaceAbsScreen(AbsMenuFragment.newInstance(blockSheetManager), "normalMenuList")
-    }
-
-    //
-    fun replaceAbsScreen(fragment: Fragment, tag: String) {
+    // ABSの画面遷移
+    override fun replaceAbsScreen(fragment: Fragment, tag: String) {
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.root_layout, fragment, tag)
@@ -163,7 +157,7 @@ class MainActivity : AppCompatActivity(),
         when (status) {
             ABSTRACTION_MENU_STATUS -> loadMenuFragment()
             ABSTRACTION_BLOCK_STATUS -> loadAbstractionBlockMenu()
-            BLOCK_SHEET_STATUS -> onAbstractionBlockSelected(blockSheetManager.selectedAbstractionBlock!!)
+            BLOCK_SHEET_STATUS -> loadAbsIndexFragment(blockSheetManager.selectedAbstractionBlock!!)
             BLOCK_ITEM_STATUS -> loadBlockItemListFragment()
             FORGETTING_LIST_STATUS -> loadMenuFragment()
             WASTING_LIST_STATUS -> loadMenuFragment()
@@ -193,7 +187,8 @@ class MainActivity : AppCompatActivity(),
                     .beginTransaction()
                     .replace(R.id.content_main, EbaFragment(), "eba")
                     .commit()
-                replaceEbaScreen(EbaWebFragment.newInstance(), "ebaWeb")
+                val ebaWebLecture = EbaWebLecture(0, "", "https://eba.learning-ware.jp", "")
+                replaceEbaScreen(EbaWebFragment.newInstance(ebaWebLecture), "ebaWeb")
             }
             R.id.nav_result -> {
                 supportFragmentManager
@@ -211,7 +206,7 @@ class MainActivity : AppCompatActivity(),
 
             }
             R.id.navigation_home -> loadMenuFragment()
-            R.id.navi_web -> replaceEbaScreen(EbaWebFragment.newInstance(), "navi_web")
+            R.id.navi_web -> replaceEbaScreen(EbaWebLectureFragment(), "navi_web")
             R.id.navi_memo -> replaceEbaScreen(EbaMemoTitlesFragment(), "navi_memo")
             R.id.navi_100 -> replaceEbaScreen(EbaWritingDrillListFragment(), "navi_100")
         }
@@ -243,28 +238,28 @@ class MainActivity : AppCompatActivity(),
         R.id.exportLog -> {
             val db = BlockStudyDatabase(this).writableDatabase
 
-            val absAnswerLogDao = AbsAnswerLogDao(db)
-            absAnswerLogDao.export()
-            val absCardAnswerLogDao = AbsCardAnswerLogDao(db)
-            absCardAnswerLogDao.export()
-            val absDailyResultsDao = AbsDailyResultsDao(db)
-            absDailyResultsDao.export()
-            val absTotalResultsDao = AbsTotalResultsDao(db)
-            absTotalResultsDao.export()
+//            val absAnswerLogDao = AbsAnswerLogDao(db)
+//            absAnswerLogDao.export()
+//            val absCardAnswerLogDao = AbsCardAnswerLogDao(db)
+//            absCardAnswerLogDao.export()
+//            val absDailyResultsDao = AbsDailyResultsDao(db)
+//            absDailyResultsDao.export()
+//            val absTotalResultsDao = AbsTotalResultsDao(db)
+//            absTotalResultsDao.export()
             val recentResultsDao = AbsRecentResultsDao(db)
             recentResultsDao.export()
 
-            val ebaDailyWebLogsDao = EbaDailyWebLogsDao(db)
-            ebaDailyWebLogsDao.export()
-            val ebaTotalWebLogsDao = EbaTotalWebLogsDao(db)
-            ebaTotalWebLogsDao.export()
-            val ebaWebLogsDao = EbaWebLogsDao(db)
-            ebaWebLogsDao.export()
-            val WebMemoDao = EbaWebMemoDao(db)
-            WebMemoDao.export()
-
-            val quotationsDao = QuotationsDao(db)
-            quotationsDao.export()
+//            val ebaDailyWebLogsDao = EbaDailyWebLogsDao(db)
+//            ebaDailyWebLogsDao.export()
+//            val ebaTotalWebLogsDao = EbaTotalWebLogsDao(db)
+//            ebaTotalWebLogsDao.export()
+//            val ebaWebLogsDao = EbaWebLogsDao(db)
+//            ebaWebLogsDao.export()
+//            val WebMemoDao = EbaWebMemoDao(db)
+//            WebMemoDao.export()
+//
+//            val quotationsDao = QuotationsDao(db)
+//            quotationsDao.export()
 
             db.close()
             Toast.makeText(this, "完了しました", Toast.LENGTH_SHORT).show()
@@ -272,24 +267,24 @@ class MainActivity : AppCompatActivity(),
         }
         R.id.importLog -> {
             val db = BlockStudyDatabase(this).writableDatabase
-            val absDailyResultsDao = AbsDailyResultsDao(db)
-            absDailyResultsDao.import()
-            val absAnswerLogDao = AbsAnswerLogDao(db)
-            absAnswerLogDao.import()
-            val absCardAnswerLogDao = AbsCardAnswerLogDao(db)
-            absCardAnswerLogDao.import()
+//            val absDailyResultsDao = AbsDailyResultsDao(db)
+//            absDailyResultsDao.import()
+//            val absAnswerLogDao = AbsAnswerLogDao(db)
+//            absAnswerLogDao.import()
+//            val absCardAnswerLogDao = AbsCardAnswerLogDao(db)
+//            absCardAnswerLogDao.import()
             val absRecentResultsDao = AbsRecentResultsDao(db)
             absRecentResultsDao.import()
-            val absTotalResultsDao = AbsTotalResultsDao(db)
-            absTotalResultsDao.import()
-            val ebaDailyWebLogsDao = EbaDailyWebLogsDao(db)
-            ebaDailyWebLogsDao.import()
-            val ebaTotalWebLogsDao = EbaTotalWebLogsDao(db)
-            ebaTotalWebLogsDao.import()
-            val ebaWebLogsDao = EbaWebLogsDao(db)
-            ebaWebLogsDao.import()
-            val ebaWebMemoDao = EbaWebMemoDao(db)
-            ebaWebMemoDao.import()
+//            val absTotalResultsDao = AbsTotalResultsDao(db)
+//            absTotalResultsDao.import()
+//            val ebaDailyWebLogsDao = EbaDailyWebLogsDao(db)
+//            ebaDailyWebLogsDao.import()
+//            val ebaTotalWebLogsDao = EbaTotalWebLogsDao(db)
+//            ebaTotalWebLogsDao.import()
+//            val ebaWebLogsDao = EbaWebLogsDao(db)
+//            ebaWebLogsDao.import()
+//            val ebaWebMemoDao = EbaWebMemoDao(db)
+//            ebaWebMemoDao.import()
 
 //            db.close()
             Toast.makeText(this, "完了しました", Toast.LENGTH_SHORT).show()

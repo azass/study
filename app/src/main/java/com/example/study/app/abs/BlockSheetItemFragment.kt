@@ -9,7 +9,6 @@ import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
-import com.example.study.BLOCKSHEET_MANAGER
 import com.example.study.DateUtils
 import com.example.study.R
 import com.example.study.StudyUtils
@@ -21,7 +20,6 @@ import com.example.study.persistence.BlockStudyDatabase
 import com.example.study.persistence.abs.AbsAnswerLogDao
 import com.example.study.persistence.abs.AbsCardAnswerLogDao
 import com.example.study.persistence.abs.AbsRecentResultsDao
-import java.io.Serializable
 
 class BlockSheetItemFragment : Fragment() {
 
@@ -30,56 +28,56 @@ class BlockSheetItemFragment : Fragment() {
     private lateinit var blockItem: BlockItem
     private lateinit var blockSheetManager: BlockSheetManager
 
-    companion object {
-
-        fun newInstance(blockSheetManager: BlockSheetManager): BlockSheetItemFragment {
-            val args = Bundle()
-            args.putSerializable(BLOCKSHEET_MANAGER, blockSheetManager as Serializable)
-            val fragment = BlockSheetItemFragment()
-            fragment.arguments = args
-            return fragment
-        }
-    }
-
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
-        blockSheetManager = arguments?.getSerializable(BLOCKSHEET_MANAGER) as BlockSheetManager
-        blockItem = blockSheetManager.getSelectedBlockItem()
-        blockSheet = blockItem.blockSheet!!
-
-        val db = BlockStudyDatabase(context!!).readableDatabase
-        val answerLogDao = AbsAnswerLogDao(db)
-        val recentResultsDao = AbsRecentResultsDao(db)
-        val answerLog = answerLogDao.selectLast(blockItem.blockNo, blockItem.itemNo)
-        val recentResult = recentResultsDao.select(blockItem.blockNo, blockItem.itemNo)
-        val dao = AbsCardAnswerLogDao(db)
-        blockItem.contents!!.forEach {
-            blockItem.cardAnswerLogs.add(dao.selectLast(it.blockNo, it.itemNo, it.seq)!!)
-        }
-        // title of action bar
-        (activity as AppCompatActivity).supportActionBar?.title = blockSheet.title
 
         val fragmentBlockItemLayout = inflater.inflate(R.layout.fragment_block_item, container,false)
 
         val ctx = context ?: return fragmentBlockItemLayout
 
+        blockSheetManager = (ctx as BlockSheetListener).getBlockSheetManager()
+        blockItem = blockSheetManager.getSelectedBlockItem()
+        blockSheet = blockSheetManager.selectedBlockSheet!!
+
+        val db = BlockStudyDatabase(context!!).readableDatabase
+        val answerLogDao = AbsAnswerLogDao(db)
+        val recentResultsDao = AbsRecentResultsDao(db)
+        val answerLog = answerLogDao.selectLast(blockSheet.blockNo, blockItem.itemNo)
+        val recentResult = recentResultsDao.select(blockSheet.blockNo, blockItem.itemNo)
+        val dao = AbsCardAnswerLogDao(db)
+        blockItem.contents!!.forEach {
+            blockItem.cardAnswerLogs.add(dao.selectLast(blockSheet.blockNo, blockItem.itemNo, it.seq)!!)
+        }
+        // title of action bar
+        (activity as AppCompatActivity).supportActionBar?.title = blockSheet.title
+
         // block_sheetのシートタイトル
-        fragmentBlockItemLayout.findViewById<TextView>(R.id.sheetTitle).text = blockSheet.title
+        fragmentBlockItemLayout.findViewById<TextView>(R.id.sheetTitle).text =
+            blockSheet.blockNo + " " + blockSheet.title
         // block_sheetのサブタイトル
-        fragmentBlockItemLayout.findViewById<TextView>(R.id.itemTitle).text = blockItem.subtitle
+        fragmentBlockItemLayout.findViewById<TextView>(R.id.itemTitle).text =
+            blockItem.itemNo.toString() + "． " + blockItem.subtitle
+
+        /* 前回 */
         // 前回解答日
         fragmentBlockItemLayout.findViewById<TextView>(R.id.lastRecordDate).text =
             if (answerLog != null) answerLog.endTime.substring(0, 10) else "-"
         // 前回解答時間
         fragmentBlockItemLayout.findViewById<TextView>(R.id.lastLapTime).text =
-            if (answerLog != null) DateUtils.formatTime(answerLog.elapsedTime) else "-"
+            if (answerLog != null) DateUtils.formatTime(answerLog.elapsedTime * 1000) else "-"
         // 前回結果
         fragmentBlockItemLayout.findViewById<TextView>(R.id.lastAccuracyRate).text =
             if (answerLog != null) answerLog.accuracyRate.toString() + "%" else "-"
-        //
-        fragmentBlockItemLayout.findViewById<TextView>(R.id.absStatus).text =
-            if (recentResult != null) StudyUtils.getStatusLabel(recentResult.status) else "-"
+        // ステータス
+        val absStatus = fragmentBlockItemLayout.findViewById<TextView>(R.id.absStatus)
+        absStatus.text = if (recentResult != null) StudyUtils.getStatusLabel(recentResult.status) else "-"
+        absStatus.setOnClickListener{
+
+            (activity as AppCompatActivity).supportFragmentManager!!
+                .beginTransaction()
+                .replace(R.id.root_layout, BlockSheetItemAnswerLogFragment(), "cardeditor")
+                .addToBackStack(null)
+                .commit()
+        }
 
         recyclerView = fragmentBlockItemLayout.findViewById(R.id.blockItem)
 
@@ -89,8 +87,7 @@ class BlockSheetItemFragment : Fragment() {
         recyclerView.addItemDecoration(DividerItemDecoration(ctx, DividerItemDecoration.VERTICAL))
 
         // fragment_block_item と block_content を結びつける
-        recyclerView.adapter =
-            BlockSheetItemAdapter(activity as AppCompatActivity, ctx, blockItem)
+        recyclerView.adapter = BlockSheetItemAdapter(activity as AppCompatActivity, ctx, blockItem)
 
         // 前ボタン
         val previousItem = fragmentBlockItemLayout.findViewById<Button>(R.id.previousItem)
@@ -99,7 +96,7 @@ class BlockSheetItemFragment : Fragment() {
                 // 抽象化ブロックシートへ遷移
                 loadBlockItemListFragment()
             } else {
-                val previousIndex = blockSheetManager.selectedBlockItemListIndex -1
+                val previousIndex = blockSheetManager.selectedBlockItemListIndex!! - 1
                 // 前のアイテム画面へ遷移
                 loadBlockItemFragment(previousIndex, blockSheetManager.blockItemList!![previousIndex])
             }
@@ -111,7 +108,7 @@ class BlockSheetItemFragment : Fragment() {
                 // 抽象化ブロックシートへ遷移
                 loadBlockItemListFragment()
             } else {
-                val nextIndex = blockSheetManager.selectedBlockItemListIndex + 1
+                val nextIndex = blockSheetManager.selectedBlockItemListIndex!! + 1
                 // 次のアイテム画面へ遷移
                 loadBlockItemFragment(nextIndex, blockSheetManager.blockItemList!![nextIndex])
             }

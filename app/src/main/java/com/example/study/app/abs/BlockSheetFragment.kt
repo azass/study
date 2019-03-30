@@ -10,38 +10,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.example.study.BLOCKSHEET_MANAGER
 import com.example.study.R
-import com.example.study.model.abs.BlockSheetManager
-import java.io.Serializable
 class BlockSheetFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
 
-    companion object {
-        fun newInstance(blockSheetManager: BlockSheetManager): BlockSheetFragment {
-            val args = Bundle()
-            args.putSerializable(BLOCKSHEET_MANAGER, blockSheetManager as Serializable)
-            val fragment = BlockSheetFragment()
-            fragment.arguments = args
-            return fragment
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-
-        val blockSheetManager = arguments?.getSerializable(BLOCKSHEET_MANAGER) as BlockSheetManager
         //
         val view = inflater.inflate(R.layout.fragment_block_sheet, container, false)
 
         val ctx = context ?: return view
 
+        val blockSheetManager = (ctx as BlockSheetListener).getBlockSheetManager()
+
         val blockSheet = blockSheetManager.selectedBlockSheet!!
 
         (activity as AppCompatActivity).supportActionBar?.title = "抽象化ブロックシート"
 
-        val blockSheetTitleView = view.findViewById<TextView>(R.id.blockSheetTitle)
-        blockSheetTitleView.text = blockSheet.title
+        view.findViewById<TextView>(R.id.blockSheetNo).text = blockSheet.blockNo
+        view.findViewById<TextView>(R.id.blockSheetTitle).text = blockSheet.title
 
         recyclerView = view.findViewById(R.id.blockItemList)
 
@@ -51,9 +38,9 @@ class BlockSheetFragment : Fragment() {
         recyclerView.addItemDecoration(DividerItemDecoration(ctx, DividerItemDecoration.VERTICAL))
 
         recyclerView.adapter = BlockSheetAdapter(
-            ctx,
-            blockSheetManager.getSelectedBlockItemList()
+            ctx, blockSheetManager.getSelectedBlockItemList()
         ) { index, blockItem ->
+            blockItem.blockSheet = blockSheet
             (ctx as OnBlockItemSelectListener).onBlockItemSelected(index, blockItem)
         }
         return view

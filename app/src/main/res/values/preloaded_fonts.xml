@@ -2,6 +2,7 @@
 <resources>
     <array name="preloaded_fonts" translatable="false">
         <item>@font/abeezee</item>
+        <item>@font/anonymous_pro</item>
         <item>@font/lato</item>
         <item>@font/noto_sans</item>
     </array>

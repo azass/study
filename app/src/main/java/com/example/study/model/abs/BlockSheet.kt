@@ -3,10 +3,10 @@ package com.example.study.model.abs
 import java.io.Serializable
 
 data class BlockSheet(
-    val _id: Int,
-    val blockNo: String,
-    val title: String,
-    var itemList: List<BlockItem>?) : Serializable {
+    val _id: Int =0,
+    val blockNo: String ="",
+    val title: String ="",
+    var itemList: List<BlockItem>? = mutableListOf()) : Serializable {
 
     var absNo = ""
     var blockItemTable: MutableMap<String, BlockItem>

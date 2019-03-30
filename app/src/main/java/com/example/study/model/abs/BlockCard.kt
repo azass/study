@@ -3,12 +3,12 @@ package com.example.study.model.abs
 import java.io.Serializable
 
 class BlockCard(
-    val _id: Int,
-    var blockNo: String,
-    var itemNo: Int,
-    var seq: Int,
-    var Q: String,
-    var hint: String?) :
+    val _id: Int =0,
+    var blockNo: String ="",
+    var itemNo: Int =0,
+    var seq: Int =0,
+    var Q: String ="",
+    var hint: String? = "") :
     Serializable {
     constructor(
         blockNo: String,

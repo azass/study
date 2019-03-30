@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">study</string>
+    <string name="title_home">Home</string>
+    <string name="title_block_sheet">Block Sheet</string>
+    <string name="edit_block_sheet">問題の編集</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>

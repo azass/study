@@ -9,20 +9,63 @@ import com.example.study.StudyUtils
 import com.example.study.StudyUtils.COMPLETE_STATUS
 import com.example.study.persistence.BlockStudyDatabase
 import com.example.study.persistence.abs.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.gson.Gson
 import java.io.Serializable
 
 class BlockSheetManager() : Serializable {
-    var abstractionBlockList: List<AbstractionBlock>? = null
+    val TABLE_NAME = "AbstractionBlock"
+
+    var abstractionBlockList = mutableListOf<AbstractionBlock>()
+
     val blockSheetTable = mutableMapOf<String, BlockSheet>()
+    val blockItemTable = mutableMapOf<String, MutableMap<String, BlockItem>>()
+
     var status: Int = MENU_STATUS
     var previouStatus: Int = MENU_STATUS
+
+    var selectedAbstractionBlockIndex: Int? = null
     var selectedAbstractionBlock: AbstractionBlock? = null
     var selectedBlockSheet: BlockSheet? = null
+    var selectedBlockSheetIndex: Int? = null
 //    var selectedBlockItem: BlockItem? = null
 
     var blockItemList: List<BlockItem>? = null
-    var selectedBlockItemListIndex: Int = 0
+    var selectedBlockItemListIndex: Int? = null
+
+    fun setup() {
+//        abstractionBlockList = mutableListOf<AbstractionBlock>()
+        val database = FirebaseDatabase.getInstance().reference
+        database.child(TABLE_NAME).addListenerForSingleValueEvent(object : ValueEventListener {
+
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                dataSnapshot.children.forEach {
+                    val abstractionBlock = it.getValue<AbstractionBlock>(AbstractionBlock::class.java)!!
+
+                    abstractionBlock.blocksheetList!!.forEach { blockSheet ->
+                        blockSheetTable.put(blockSheet.blockNo, blockSheet)
+                        blockItemTable.put(blockSheet.blockNo, mutableMapOf())
+                        blockSheet.itemList!!.forEach { blockItem ->
+                            // 双方向関連
+                            blockItem.blockSheet = blockSheet
+                            blockItemTable[blockSheet.blockNo]!!.put(blockItem.itemNo.toString(), blockItem)
+                            blockItem.contents!!.forEachIndexed { index, blockCard ->
+                                blockCard.seq = index
+                            }
+                        }
+                    }
+
+                    abstractionBlockList.add(abstractionBlock)
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+        })
+    }
 
     fun setup(context: Context) {
 //        abstractionBlockList = mutableListOf()
@@ -31,7 +74,7 @@ class BlockSheetManager() : Serializable {
         val blockSheetDao = BlockSheetDao(db)
         val blockItemDao = BlockItemDao(db)
         val blockCardDao = BlockCardDao(db)
-        abstractionBlockList = abstractionBlockDao.selectAll()
+//        abstractionBlockList = abstractionBlockDao.selectAll()
         abstractionBlockList!!.forEach {
             val abstractionBlock = it
             val blockSheetList = blockSheetDao.find("absNo = ?", arrayOf(it.absNo), "blockNo")
@@ -63,7 +106,7 @@ class BlockSheetManager() : Serializable {
         val blockSheetDao = BlockSheetDao(db)
         val blockItemDao = BlockItemDao(db)
         val blockCardDao = BlockCardDao(db)
-        abstractionBlockList = abstractionBlockDao.selectAll()
+//        abstractionBlockList = abstractionBlockDao.selectAll()
         abstractionBlockList!!.forEach {
             //            val abstractionBlock = it
             val blockSheetList = blockSheetDao.find("absNo = ?", arrayOf(it.absNo), "blockNo")
@@ -129,13 +172,13 @@ class BlockSheetManager() : Serializable {
     }
 
     fun getSelectedBlockItem(): BlockItem {
-        return blockItemList!![selectedBlockItemListIndex]
+        return blockItemList!![selectedBlockItemListIndex!!]
     }
 
     fun getBlockItem(blockNo: String, itemNo: Int): BlockItem {
-        val blockSheet = blockSheetTable[blockNo]!!
-        val blockItem = blockSheet.blockItemTable[itemNo.toString()]!!
-        return blockItem
+//        val blockSheet = blockSheetTable[blockNo]!!
+//        val blockItem = blockSheet.blockItemTable[itemNo.toString()]!!
+        return blockItemTable[blockNo]!!.get(itemNo.toString())!!
     }
 
     fun changeStatus(status: Int) {

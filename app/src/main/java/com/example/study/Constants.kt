@@ -1,0 +1,14 @@
+package com.example.study
+
+const val BLOCKSHEET_MANAGER = "BLOCKSHEET_MANAGER"
+const val BLOCK_SHEET = "BLOCK_SHEET"
+const val BLOCK_ITEM = "BLOCK_ITEM"
+const val BLOCK_CARD = "BLOCK_CARD"
+
+const val MENU_STATUS = 0
+const val ABSTRACTION_MENU_STATUS = 1
+const val ABSTRACTION_BLOCK_STATUS = 2
+const val BLOCK_SHEET_STATUS = 3
+const val BLOCK_ITEM_STATUS = 4
+const val FORGETTING_LIST_STATUS = 5
+const val WASTING_LIST_STATUS = 6

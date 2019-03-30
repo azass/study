@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.example.study.R
+import com.example.study.app.OnLoadFragmentListener
 import com.example.study.model.abs.AbstractionBlock
 import com.example.study.model.abs.BlockSheet
 import java.io.Serializable
@@ -48,7 +49,7 @@ class AbsIndexFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(ctx, LinearLayoutManager.VERTICAL, false)
         recyclerView.addItemDecoration(DividerItemDecoration(ctx, DividerItemDecoration.VERTICAL))
         recyclerView.adapter = AbstractionBlockAdapter(ctx, abstractionBlock.blocksheetList!!) { blockSheet ->
-            (context as OnBlockSheetSelectListener).onBlockSheetSelected(blockSheet)
+            (context as OnLoadFragmentListener).loadBlockSheetFragment(blockSheet)
         }
         return view
     }
@@ -81,10 +82,5 @@ class AbsIndexFragment : Fragment() {
 
     internal inner class AbstractionBlockViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val title = itemView.findViewById<TextView>(R.id.blockSheetTitle)
-    }
-
-    // クリックイベントリスナー
-    interface OnBlockSheetSelectListener {
-        fun onBlockSheetSelected(blockSheet: BlockSheet)
     }
 }

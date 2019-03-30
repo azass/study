@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+            android:id="@+id/navi_web"
+            android:icon="@android:drawable/presence_video_busy"
+            android:title="講義" />
+    <item
+            android:id="@+id/navi_memo"
+            android:icon="@android:drawable/ic_input_get"
+            android:title="講義メモ"/>
+    <item
+            android:id="@+id/navi_100"
+            android:icon="@android:drawable/ic_menu_edit"
+            android:title="100字訓練"/>
+</menu>

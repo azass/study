@@ -9,12 +9,10 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.study.BLOCKSHEET_MANAGER
 import com.example.study.R
 import com.example.study.model.abs.BlockSheetManager
 import com.example.study.persistence.BlockStudyDatabase
 import com.example.study.persistence.abs.AbsRecentResultsDao
-import java.io.Serializable
 
 class AbsForgettingsFragment : Fragment() {
 
@@ -22,15 +20,15 @@ class AbsForgettingsFragment : Fragment() {
 
     private lateinit var blockSheetManager: BlockSheetManager
 
-    companion object {
-        fun newInstance(blockSheetManager: BlockSheetManager): AbsForgettingsFragment {
-            val args = Bundle()
-            args.putSerializable(BLOCKSHEET_MANAGER, blockSheetManager as Serializable)
-            val fragment = AbsForgettingsFragment()
-            fragment.arguments = args
-            return fragment
-        }
-    }
+//    companion object {
+//        fun newInstance(blockSheetManager: BlockSheetManager): AbsForgettingsFragment {
+//            val args = Bundle()
+//            args.putSerializable(BLOCKSHEET_MANAGER, blockSheetManager as Serializable)
+//            val fragment = AbsForgettingsFragment()
+//            fragment.arguments = args
+//            return fragment
+//        }
+//    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
@@ -43,7 +41,8 @@ class AbsForgettingsFragment : Fragment() {
         dao.selectAll()
         db.close()
 
-        blockSheetManager = arguments?.getSerializable(BLOCKSHEET_MANAGER) as BlockSheetManager
+//        blockSheetManager = arguments?.getSerializable(BLOCKSHEET_MANAGER) as BlockSheetManager
+        blockSheetManager = (ctx as BlockSheetListener).getBlockSheetManager()
 
         (activity as AppCompatActivity).supportActionBar?.title = "忘却リスト"
 
@@ -56,9 +55,8 @@ class AbsForgettingsFragment : Fragment() {
 
         recyclerView.adapter =
             BlockSheetAdapter(
-                ctx,
-                blockSheetManager.getForgettingList(ctx)
-            ) { index, blockItem ->
+                ctx, blockSheetManager.getForgettingList(ctx)) { index, blockItem ->
+
                 (ctx as OnBlockItemSelectListener).onBlockItemSelected(index, blockItem)
             }
         return view

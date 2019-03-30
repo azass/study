@@ -113,7 +113,7 @@ class AbsRecentResultsDao(val db: SQLiteDatabase) {
     fun export() {
         exportCsv()
         val database = FirebaseDatabase.getInstance().reference
-        findAll("bakFlg = '1'").forEach {
+        findAll(null).forEach {
             database.child(TABLE_NAME).push().setValue(it)
 
             val updateSet = ContentValues().apply {
@@ -147,6 +147,7 @@ class AbsRecentResultsDao(val db: SQLiteDatabase) {
         database.child(TABLE_NAME).addListenerForSingleValueEvent(object : ValueEventListener {
 
             override fun onDataChange(p0: DataSnapshot) {
+                db.delete(TABLE_NAME, "blockNo = ?", arrayOf(""))
                 p0.children.forEach {
                     val recentResult = it.getValue<AbsRecentResult>(AbsRecentResult::class.java)!!
                     db.delete(TABLE_NAME, "_id = ?", arrayOf(recentResult._id.toString()))

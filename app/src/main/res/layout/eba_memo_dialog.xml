@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="match_parent">
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            android:id="@+id/linearLayout3">
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorPrimaryDark"
+                android:gravity="center">
+
+            <TextView
+                    android:id="@+id/ebaMemoDialogTitle"
+                    android:text="講座タイトル編集"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse"
+                    android:background="@color/colorPrimaryDark"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:padding="10dp"/>
+            <Button
+                    android:id="@+id/saveEbaMemoDialog"
+                    android:text="保存"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/colorNavIcon"
+                    android:layout_margin="8dp"
+                    android:layout_height="40dp"/>
+        </LinearLayout>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:layout_marginTop="8dp">
+            <TextView
+                    android:id="@+id/ebaMemoSeekTimeLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:text="SEEK TIME"/>
+
+            <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:id="@+id/ebaMemoSeekTime"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginBottom="8dp"/>
+
+            <TextView
+                    android:id="@+id/ebaMemoMemoLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toTopOf="@+id/inputTitle"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginStart="16dp" android:text="MEMO"/>
+
+            <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:id="@+id/ebaMemoMemo"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginBottom="8dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

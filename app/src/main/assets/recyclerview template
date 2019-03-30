@@ -1,0 +1,127 @@
+
+import android.content.Context
+import android.os.Bundle
+import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.DividerItemDecoration
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import com.example.study.R
+import java.io.Serializable
+
+class 画面Fragment : Fragment() {
+    private lateinit var recyclerView: RecyclerView
+
+    companion object {
+        private const val XXX = "XXX"
+
+        fun newInstance(xxx: XXX): AbsIndexFragment {
+            val args = Bundle()
+            args.putSerializable(XXX, xxx as Serializable)
+            val fragment = ＸＸＸFragment()
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        // データのレジーインスタンシエーション
+        val データ = arguments?.getSerializable(データキー) as データ
+
+        // アクションバーのタイトル
+        (activity as AppCompatActivity).supportActionBar?.title = ""
+        // ビュー
+        val view = inflater.inflate(R.layout.fragment_画面レイアウト, container, false)
+        val ctx = context ?: return view
+        // 画面のタイトル
+        view.findViewById<TextView>(R.id.画面タイトル).text = データ.title
+
+        // 各カテゴリーの抽象化ブロックシートリスト表示
+        recyclerView = view.findViewById(R.id.画面)
+        recyclerView.layoutManager = LinearLayoutManager(ctx, LinearLayoutManager.VERTICAL, false)
+        recyclerView.addItemDecoration(DividerItemDecoration(ctx, DividerItemDecoration.VERTICAL)) // 枠線
+        recyclerView.adapter = 画面Adapter(ctx, データList!!) { データ ->
+            (context as OnデータSelectListener).onデータSelected(データ)
+        }
+        return view
+    }
+    // アダプタクラス
+    internal inner class 画面Adapter(
+        private val context: Context,
+        private val データList: List<データ>,
+        private val onデータClicked: (データ) -> Unit) : RecyclerView.Adapter<データViewHolder>() {
+
+        private val inflater = LayoutInflater.from(context)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): データViewHolder {
+            val view = inflater.inflate(R.layout.データ_row, parent, false)
+            val viewHolder = データViewHolder(view)
+
+            view.setOnClickListener {
+                val データ = データList[viewHolder.adapterPosition]
+                onデータClicked(データ)
+            }
+            return viewHolder
+        }
+
+        override fun getItemCount() = データList.size
+
+        override fun onBindViewHolder(holder: データViewHolder, position: Int) {
+            val データ = データList[position]
+            holder.title.text = データ.title
+        }
+    }
+    // ビューホルダー
+    internal inner class データViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val title = itemView.findViewById<TextView>(R.id.データTitle)
+    }
+
+    // クリックイベントリスナー
+    interface OnデータSelectListener {
+        fun onデータSelected(データ: データ)
+    }
+}
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:id="@+id/画面"
+                                        android:orientation="vertical"
+                                        android:layout_marginLeft="4dp"
+                                        android:layout_marginRight="4dp"
+                                        android:layout_marginBottom="4dp"
+                                        android:layout_marginTop="4dp">
+
+</android.support.v7.widget.RecyclerView>
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="wrap_content">
+    <TextView
+            android:text="TextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/データRow"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textStyle="bold"
+            android:paddingLeft="10dp"/>
+
+</android.support.constraint.ConstraintLayout>

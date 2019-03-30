@@ -5,10 +5,10 @@ import java.util.*
 
 object StudyUtils {
 
-    const val BORDER_TIME_1: Long = 24 * 3600000
-    const val BORDER_TIME_2: Long = 168 * 3600000
-    const val BORDER_TIME_3: Long = 336 * 3600000
-    const val BORDER_TIME_4: Long = 720 * 3600000
+    const val BORDER_TIME_1: Long = 24L * 3600000L
+    const val BORDER_TIME_2: Long = 168L * 3600000L
+    const val BORDER_TIME_3: Long = 336L * 3600000L
+    const val BORDER_TIME_4: Long = 720L * 3600000L
 
 //    const val BORDER_TIME_1: Long = 5 * 60000
 //    const val BORDER_TIME_2: Long = 10 * 60000
